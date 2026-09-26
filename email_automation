@@ -1,0 +1,185 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "qwen2.5:1.5b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        240
+      ],
+      "id": "b0824f8f-d21e-44f9-9e29-20004eeb6cbc",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "mTK2GBcfZpTwd7wJ",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {}
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -528,
+        80
+      ],
+      "id": "1644d3ee-14d3-45df-8987-eed68b1982d9",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ekxKsSkOyNuBj7Px",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional email assistant.\n\nRead the incoming email and write the reply that should actually be sent.\n\nIncoming email:\n{{ $json.email }}\n\nRules:\n- Understand what the sender wants.\n- Answer their request directly.\n- Be polite and natural.\n- Keep the reply concise.\n- Do not invent information.\n- Do not invent dates, times, attachments, or promises.\n- Do not write a subject line.\n- Do not explain your reasoning.\n- Output only the email reply.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "="
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        48,
+        64
+      ],
+      "id": "53829987-25f1-49ad-a465-758731c76383",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69d9a538-4264-42fc-bfd2-2e580fda9edc",
+              "name": "=email",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -288,
+        96
+      ],
+      "id": "4d13ba84-473d-49c2-a0fb-c7b9ac694de8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "reply",
+        "threadId": "={{ $('Gmail Trigger').item.json.threadId }}",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "message": "={{ $('Basic LLM Chain').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        208
+      ],
+      "id": "bfe21b29-f323-4303-b579-0cc067ce6a76",
+      "name": "Reply to a message",
+      "webhookId": "ba7f736e-ec97-4026-b6f7-b70db6081b03",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ekxKsSkOyNuBj7Px",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c6e1d6ee-efe9-49cd-99d3-39d0acfe412b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8dc8ee34aac542b07ccbd37e459c5b37ff9991424ce6b300e6dd98a38f296ce8"
+  },
+  "nodeGroups": [],
+  "id": "jn5ATnKrn1dSMIjQ",
+  "tags": []
+}
